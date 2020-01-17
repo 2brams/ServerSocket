@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	char data[500];
 
 	if (wiringPiSetup() == -1)
-			return 1;
+		return 1;
 	pinMode(0, OUTPUT);
 
 	for (;;) {
@@ -68,9 +68,15 @@ int main(int argc, char **argv) {
 				offBlink();
 				snprintf(data, sizeof data, "%s", "OFF");
 			} else if (strncmp("cpt", buffer, 3) == 0) {
-				char *datas = bme280();
+
+				const char *datas = bme280();
 				snprintf(data, sizeof data, "%s", datas);
 				free(datas);
+
+			} else if (strncmp("tmp", buffer, 3) == 0) {
+				snprintf(data, sizeof data, "%6.3f", cpuTemp());
+			} else if (strncmp("frq", buffer, 3) == 0) {
+				snprintf(data, sizeof data, "%6.3f", cpuFreq());
 			} else {
 				snprintf(data, sizeof data, "%s\n %s\n", "OK:", buffer);
 			}

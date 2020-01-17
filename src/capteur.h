@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* createStr();
-char* bme280();
+const char* bme280();
+double cpuTemp() ;
+double cpuFreq();
 
 
 #define BME280_ADDRESS                0x76

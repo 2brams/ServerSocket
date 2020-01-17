@@ -6,34 +6,41 @@
 #include <wiringPiI2C.h>
 #include "capteur.h"
 
-char* createStr() {
-	char *chaines = malloc(1000);
-	if (chaines == NULL) {
-		printf("Error allocating memory for string.");
-		exit(1);
-	}
-	FILE *fp = fopen("/proc/cpuinfo", "r");
+double cpuTemp() {
+
+	FILE *fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+	double T;
+
 	if (fp == NULL) {
 		perror("Unable to open file!");
 		exit(1);
 	}
+	fscanf (fp, "%lf", &T);
+	T /= 1000;
 
-	char chunk[128];
-	char subchunk[50] = { 0 };
-
-	while (fgets(chunk, sizeof(chunk), fp) != NULL) {
-		if (strstr(chunk, "cpu MHz")) {
-			//			getSubString(chunk,subchunk,11,strlen(chunk));
-			strcat(chaines, chunk);
-
-		}
-	}
 	fclose(fp);
-	return chaines;
+	return T;
 }
 
-char* bme280() {
-	char *datas = malloc(100);
+double cpuFreq() {
+
+	FILE *fp = fopen("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
+	double F;
+
+	if (fp == NULL) {
+		perror("Unable to open file!");
+		exit(1);
+	}
+	fscanf (fp, "%lf", &F);
+	F /= 1000;
+
+	fclose(fp);
+	return F;
+}
+
+
+const char* bme280() {
+
 
 	int fd = wiringPiI2CSetup(BME280_ADDRESS);
 	if (fd < 0) {
@@ -56,8 +63,14 @@ char* bme280() {
 	float h = compensateHumidity(raw.humidity, &cal, t_fine);       // %
 	float a = getAltitude(p);                         // meters
 
-	sprintf(datas, "{\"sensor\":\"bme280\", \"humidity\":%.2f,"
-			" \"temperature\":%.2f}\n", h, t);
+	char *datas = malloc(255);
+//	    snprintf(datas, sizeof(datas), "{\"sensor\":\"bme280\", \"humidity\":%.2f, \"pressure\":%.2f,"
+//				" \"temperature\":%.2f, \"altitude\":%.2f}\n", h, p, t, a);
+
+
+	sprintf(datas,
+			"{\"sensor\":\"bme280\", \"humidity\":%.2f, \"pressure\":%.2f,"
+					" \"temperature\":%.2f, \"altitude\":%.2f}\n", h, p, t, a);
 
 	return datas;
 }
