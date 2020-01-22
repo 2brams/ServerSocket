@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <wiringPi.h>
 
-void blink();
-void offBlink();
+int blink();
+int offBlink();
 
 #endif /* ACTIONNEUR_H_ */

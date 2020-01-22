@@ -46,7 +46,9 @@ int main(int argc, char **argv) {
 	if (wiringPiSetup() == -1)
 		return 1;
 	pinMode(0, OUTPUT);
-
+	pinMode(1, OUTPUT);
+	digitalWrite(0, 0);
+	digitalWrite(1, 0);
 	for (;;) {
 
 		int client_fd = accept(sockfd, (struct sockaddr*) &client_addr,
@@ -57,16 +59,15 @@ int main(int argc, char **argv) {
 			exit(0);
 		} else {
 			printf("server acccept the client...\n");
+			digitalWrite(0, 1);
 
 			int n = read(client_fd, buffer, 200);
 			printf("%s", buffer);
 
 			if (strncmp("on", buffer, 2) == 0) {
-				blink();
-				snprintf(data, sizeof data, "%s", "ON");
+				snprintf(data, sizeof data, "%d", blink());
 			} else if (strncmp("off", buffer, 3) == 0) {
-				offBlink();
-				snprintf(data, sizeof data, "%s", "OFF");
+				snprintf(data, sizeof data, "%d", offBlink());
 			} else if (strncmp("cpt", buffer, 3) == 0) {
 
 				const char *datas = bme280();
@@ -83,8 +84,10 @@ int main(int argc, char **argv) {
 			printf("\n");
 			n = write(client_fd, data, strlen(data));
 			close(client_fd);
+			digitalWrite(0, 0);
 		}
 
 	}
+	digitalWrite(1, 0);
 	return (EXIT_SUCCESS);
 }
